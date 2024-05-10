@@ -1,5 +1,7 @@
-# This is a sample Python script.
+
 from random import randrange, randint
+import numpy as np
+from nistrng import *
 import math
 
 
@@ -41,18 +43,33 @@ def encode(bit, key):
         result += str(int(int(i) != j))
     print("Zakodowany/Zdekodowany wyraz to " + result)
     return result
-
+def test_key(key: str):
+    print("--- GENERATE KEY ---")
+    register = [int(char) for char in list(key)]
+    bit_array = np.array(register)
+    eligible_battery: dict = check_eligibility_all_battery(bit_array, SP800_22R1A_BATTERY)
+    results = run_all_battery(bit_array, eligible_battery, False)
+    for result, elapsed_time in results:
+        if result.passed:
+            print("- PASSED - score: " + str(
+                np.round(result.score, 3)) + " - " + result.name + " - elapsed time: " + str(
+                elapsed_time) + " ms")
+        else:
+            print("- FAILED - score: " + str(
+                np.round(result.score, 3)) + " - " + result.name + " - elapsed time: " + str(
+                elapsed_time) + " ms")
 
 def readFile():
-    f = open("values.txt", "r")
-
+    with open('values.txt', 'r') as file:
+        data = file.read().replace('\n', '')
+    return data
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    word = "string"
-
-    string_bit, length = convert(word)
+    data = readFile()
+    string_bit, length = convert(data)
     key = vernam(30000000091, 40000000003, length)
+    test_key(key)
     result = encode(string_bit, key)
     if (string_bit == encode(result, key)):
         print("Klucze zgadzaja sie po odkodowaniu!")
